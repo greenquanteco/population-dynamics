@@ -158,3 +158,6 @@ cmat[,1:4]
 
 # create a csv of capture history and saves into directory
 write.csv(cmat, "capture-history-matrix.csv", row.names=rownames(cmat))
+
+# way cmat file is written is creating issues for creating string later on 
+# in trial code script 

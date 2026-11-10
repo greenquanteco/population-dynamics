@@ -7,7 +7,8 @@
 cap <- read.csv("capture-events.csv")
 day <- read.csv("session-days.csv")
 ind <- read.csv("capture-individuals.csv")
-site.dat <- read.csv("SMT 2026 Grid Data(smt26-site).csv")
+site.dat <- read.csv("site-metadata.csv")
+cmat <- read.csv("capture-history-matrix.csv")
 
 ## call in RMark
 library(RMark)
@@ -28,6 +29,7 @@ time_intervals
 # 0 0 0 1 0 0 0 1 0 0 0 1 0 0 0 1 0 0 0
 
 ## organizing code into proper formatting
+
 # uses cmat to create string of capture histories and places strings together in a data frame
 ch_strings <- apply(cmat, 1, paste, collapse = "")
 ch_df <- data.frame(ch = ch_strings, stringsAsFactors = FALSE)
@@ -45,6 +47,8 @@ ch_df <- data.frame(
   urban.level =ind$site.type,
   stringsAsFactors = FALSE
 )
+
+####### NAs in hunt data is causing issues !!
 
 ## trouble shooting
 
