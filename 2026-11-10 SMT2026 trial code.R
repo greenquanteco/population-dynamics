@@ -73,14 +73,6 @@ ind <- ind[order(ind$tag),]
 ch_strings <- apply(cmat.str, 1, paste, collapse = "")
 ch_df <- data.frame(ch = ch_strings, stringsAsFactors = FALSE)
 
-# need to remove NAs from Hunt tags
-# do this by keeping only last 16 characters in ch
-# for all rows where site is hunt
-ch_df$ch <- ifelse(
-  ch_df$site == "hunt",
-  substr(ch_df$ch, nchar(ch_df$ch) - 15, nchar(ch_df$ch)),
-  ch_df$ch
-)
 
 # changes column name of ch_strings to just ch 
 # adding tag, site, and urban level as individual covariates
@@ -90,6 +82,15 @@ ch_df <- data.frame(
   site = ind$site,
   urban.level =ind$site.type,
   stringsAsFactors = FALSE
+)
+
+# need to remove NAs from Hunt tags
+# do this by keeping only last 16 characters in ch
+# for all rows where site is hunt
+ch_df$ch <- ifelse(
+  ch_df$site == "hunt",
+  substr(ch_df$ch, nchar(ch_df$ch) - 15, nchar(ch_df$ch)),
+  ch_df$ch
 )
 
 ## trouble shooting
