@@ -14,7 +14,8 @@ cmat <- read.csv("capture-history-matrix.csv")
 library(RMark)
 
 ## creating time interval
-n_primary <- 5
+# changing primary to 4 to test code, should be 5
+n_primary <- 4
 n_secondary <- 4
 
 build_time_intervals <- function(n_primary, n_secondary) {
@@ -84,23 +85,33 @@ ch_df <- data.frame(
   stringsAsFactors = FALSE
 )
 
+# making copy of ch_df 
+ch_df.2 <- ch_df
+
 # need to remove NAs from Hunt tags
 # do this by keeping only last 16 characters in ch
 # for all rows where site is hunt
-ch_df$ch <- ifelse(
-  ch_df$site == "hunt",
-  substr(ch_df$ch, nchar(ch_df$ch) - 15, nchar(ch_df$ch)),
-  ch_df$ch
-)
+#ch_df$ch <- ifelse(
+ # ch_df$site =="hunt",
+ # substr(ch_df$ch, nchar(ch_df$ch) - 15, nchar(ch_df$ch)),
+  #ch_df$ch
+#)
+
+# removing first occasion for all sites to test code
+ch_df.2$ch <- substr(ch_df.2$ch, nchar(ch_df.2$ch) - 15, nchar(ch_df.2$ch))
+
+# need to remove any individuals with no captures after first session was removed
+is_all_zeros <- sapply(ch_df.2, grepl, pattern = "^0+$")
+ch_df.2 <- ch_df.2[!apply(is_all_zeros, 1, any), , drop = FALSE]
 
 ## trouble shooting
 
 # make sure ch lengths are all 20
-nchar(ch_df$ch)
+nchar(ch_df.2$ch)
 
 ## try and run model
 rd_processed <- process.data(
-  ch_df,
+  ch_df.2,
   model          = "Robust",
   time.intervals = time_intervals
 )
@@ -111,7 +122,7 @@ rd_fit <- mark(
   rd_processed,
   rd_ddl,
   model.parameters = list(
-    S                = list(formula = ~ site.type),
+    S                = list(formula = ~ urban.level),
     p                = list(formula = ~ 1),
     GammaPrime       = list(formula = ~ 1),
     GammaDoublePrime = list(formula = ~ 1)
@@ -120,3 +131,4 @@ rd_fit <- mark(
   silent = TRUE
 )
 
+rd_fit$results$beta
