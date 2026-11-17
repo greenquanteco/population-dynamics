@@ -1,0 +1,222 @@
+
+ Program  MARK  - Survival Rate Estimation with Capture-Recapture Data
+ gfortran(dble/PIM2) Vers. 11.2 Nov 2025  17-Nov-2026 10:09:20    Page  001
+  
+ - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+ 
+ Welcome to MARK spasch10 on machine SC363-NG02 in subdirectory
+   "C:\Users\spasch10\Documents\population-dynamics" running file "mark003.inp".
+ This version was compiled by GCC version 15.2.0 on May 13 2026 at 09:15:15
+ using the options: 
+  -cpp -iprefix C:/tdm-gcc-64/mingw64-15-2/bin/../lib/gcc/
+  x86_64-w64-mingw32/15.2.0/ -D_MT -D_REENTRANT -U_REENTRANT -D
+  dbleprecision -m64 -march=x86-64-v4 -mtune=generic -mthreads -O3
+  -std=f2023 -fimplicit-none -ffpe-summary=invalid,zero,overflow,underflow
+  -fno-unsafe-math-optimizations -fopenmp-simd -fstack-arrays -flto=auto
+  -fall-intrinsics -fopenmp
+
+ This problem will use 2 of 36 possible threads.
+ Static thread allocation is used.
+ INPUT --- proc title ;
+
+ For procedure title CPU Time was 0.001 secs and System Time was 0.001 secs.
+ INPUT --- proc chmatrix occasions= 16 groups= 1 etype= Robust Nodes= 
+ INPUT --- 101 ICMeans NoHist hist=  118 ;
+ INPUT ---    time interval 0 0 0 1 0 0 0 1 0 0 0 1 0 0 0 ;
+ INPUT ---    glabel(1)=Group 1;
+
+      Number of unique encounter histories read was 118.
+
+      Number of individual covariates read was 0.
+      Time interval lengths vary and/or not equal to 1.
+
+      Data type number is 7
+      Data type is Robust Design with Full Likelihhood p and c
+
+ For procedure chmatrix CPU Time was 0.001 secs and System Time was 0.001 secs.
+
+Program  MARK  - Survival Rate Estimation with Capture-Recapture Data
+ gfortran(dble/PIM2) Vers. 11.2 Nov 2025  17-Nov-2026 10:09:20    Page  002
+ - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+ 
+
+
+ INPUT --- proc estimate link=Parm-Specific NOLOOP varest=2ndPart    ;
+ INPUT --- model={ S(~1)Gamma''(~1)Gamma'()p(~1)c()f0(~session) };
+ INPUT ---    group=1 S    rows=3 cols=3 Triang ;
+ INPUT ---        1 1 1 ;
+ INPUT ---        1 1 ;
+ INPUT ---        1 ;
+ INPUT ---    group=1 Gamma''    rows=3 cols=3 Triang ;
+ INPUT ---        2 2 2 ;
+ INPUT ---        2 2 ;
+ INPUT ---        2 ;
+ INPUT ---    group=1 Gamma'    rows=2 cols=2 Triang ;
+ INPUT ---        2 2 ;
+ INPUT ---        2 ;
+ INPUT ---    group=1 p  Session 1  rows=1 cols=4 Square ;
+ INPUT ---        3 3 3 3 ;
+ INPUT ---    group=1 p  Session 2  rows=1 cols=4 Square ;
+ INPUT ---        3 3 3 3 ;
+ INPUT ---    group=1 p  Session 3  rows=1 cols=4 Square ;
+ INPUT ---        3 3 3 3 ;
+ INPUT ---    group=1 p  Session 4  rows=1 cols=4 Square ;
+ INPUT ---        3 3 3 3 ;
+ INPUT ---    group=1 c  Session 1  rows=1 cols=3 Square ;
+ INPUT ---        3 3 3 ;
+ INPUT ---    group=1 c  Session 2  rows=1 cols=3 Square ;
+ INPUT ---        3 3 3 ;
+ INPUT ---    group=1 c  Session 3  rows=1 cols=3 Square ;
+ INPUT ---        3 3 3 ;
+ INPUT ---    group=1 c  Session 4  rows=1 cols=3 Square ;
+ INPUT ---        3 3 3 ;
+ INPUT ---    group=1 f0  Session 1  rows=1 cols=1 Square ;
+ INPUT ---        4 ;
+ INPUT ---    group=1 f0  Session 2  rows=1 cols=1 Square ;
+ INPUT ---        5 ;
+ INPUT ---    group=1 f0  Session 3  rows=1 cols=1 Square ;
+ INPUT ---        6 ;
+ INPUT ---    group=1 f0  Session 4  rows=1 cols=1 Square ;
+ INPUT ---        7 ;
+ INPUT ---    design matrix constraints=7 covariates=7;
+ INPUT ---        1 0 0 0 0 0 0;
+ INPUT ---        0 1 0 0 0 0 0;
+ INPUT ---        0 0 1 0 0 0 0;
+ INPUT ---        0 0 0 1 0 0 0;
+ INPUT ---        0 0 0 1 1 0 0;
+ INPUT ---        0 0 0 1 0 1 0;
+
+Program  MARK  - Survival Rate Estimation with Capture-Recapture Data
+ gfortran(dble/PIM2) Vers. 11.2 Nov 2025  17-Nov-2026 10:09:20    Page  003
+ - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+ 
+ INPUT ---        0 0 0 1 0 0 1;
+ INPUT ---    links=7;
+ INPUT ---       Logit;
+ INPUT ---       Logit;
+ INPUT ---       Logit;
+ INPUT ---       Log;
+ INPUT ---       Log;
+ INPUT ---       Log;
+ INPUT ---       Log;
+ INPUT ---       blabel(1)=S:(Intercept);
+ INPUT ---       blabel(2)=GammaDoublePrime:(Intercept);
+ INPUT ---       blabel(3)=p:(Intercept);
+ INPUT ---       blabel(4)=f0:(Intercept);
+ INPUT ---       blabel(5)=f0:session2;
+ INPUT ---       blabel(6)=f0:session3;
+ INPUT ---       blabel(7)=f0:session4;
+ INPUT ---       rlabel(1)=S g1 c1 a0 t1;
+ INPUT ---       rlabel(2)=Gamma'' g1 c1 a0 t1;
+ INPUT ---       rlabel(3)=p g1 s1 t1;
+ INPUT ---       rlabel(4)=f0 g1 a0 s1 t0;
+ INPUT ---       rlabel(5)=f0 g1 a0 s2 t0;
+ INPUT ---       rlabel(6)=f0 g1 a0 s3 t0;
+ INPUT ---       rlabel(7)=f0 g1 a0 s4 t0;
+   Model is { S(~1)Gamma''(~1)Gamma'()p(~1)c()f0(~session) }
+
+ Link Function Used is PARM-SPECIFIC
+
+ Variance Estimation Procedure Used is 2ndPart 
+
+ M(t+1):
+ Group 1 = Group 1
+      87     81     76     66
+
+
+ -2logL(saturated) = -502.27382    
+ Effective Sample Size = 680
+
+ Number of function evaluations was 24 for 7 parameters.
+ For numerical optimization, CPU Time was 0.031 secs and System Time was 0.047 secs.
+ -2logL { S(~1)Gamma''(~1)Gamma'()p(~1)c()f0(~session) } = -23.250865    
+ Penalty { S(~1)Gamma''(~1)Gamma'()p(~1)c()f0(~session) } = 0.0000000     
+ Gradient { S(~1)Gamma''(~1)Gamma'()p(~1)c()f0(~session) }:
+ -2.16713E-05 -9.25031E-06   0.0000      1.56260E-06   0.0000    
+   0.0000     -2.89808E-06
+ Maximum ABS(G) { S(~1)Gamma''(~1)Gamma'()p(~1)c()f0(~session) } =  2.16713E-05
+ To compute VC matrix, CPU Time was 0.016 secs and System Time was 0.016 secs.
+ S Vector { S(~1)Gamma''(~1)Gamma'()p(~1)c()f0(~session) }:
+   333.5927      55.28917      11.04485      3.140266      3.066564    
+   2.671468     0.7132659    
+ To invert VC matrix, CPU Time was 0.001 secs and System Time was 0.001 secs.
+ Ratio Threshold = 50.00 Max Gap (1/2) = 6.034 Next Max Gap (1/2) = 6.034
+ Gap Method for Num. of Estimated Parameters { S(~1)Gamma''(~1)Gamma'()p(~1)c()f0(~session) } = 7          
+
+Program  MARK  - Survival Rate Estimation with Capture-Recapture Data
+ gfortran(dble/PIM2) Vers. 11.2 Nov 2025  17-Nov-2026 10:09:20    Page  004
+ - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+ 
+ Threshold { S(~1)Gamma''(~1)Gamma'()p(~1)c()f0(~session) } = 0.4334268E-04           
+ Numerical Threshold Method for Num. of Estimated Parameters { S(~1)Gamma''(~1)Gamma'()p(~1)c()f0(~session) } = 7          
+ Number of Estimated Parameters { S(~1)Gamma''(~1)Gamma'()p(~1)c()f0(~session) } = 7          
+ DEVIANCE { S(~1)Gamma''(~1)Gamma'()p(~1)c()f0(~session) } = 479.02296               
+ DEVIANCE Degrees of Freedom { S(~1)Gamma''(~1)Gamma'()p(~1)c()f0(~session) } = 111          
+ c-hat { S(~1)Gamma''(~1)Gamma'()p(~1)c()f0(~session) } = 4.3155221               
+ AIC { S(~1)Gamma''(~1)Gamma'()p(~1)c()f0(~session) } = -9.2508646              
+ AICc { S(~1)Gamma''(~1)Gamma'()p(~1)c()f0(~session) } = -9.0841979              
+ BIC { S(~1)Gamma''(~1)Gamma'()p(~1)c()f0(~session) } = 22.403785               
+ Pearson Chisquare { S(~1)Gamma''(~1)Gamma'()p(~1)c()f0(~session) } = 90003.960               
+ Possible Encounter Histories { S(~1)Gamma''(~1)Gamma'()p(~1)c()f0(~session) } = 65535          
+ Pearson Chisquare df { S(~1)Gamma''(~1)Gamma'()p(~1)c()f0(~session) } = 65527          
+ Pearson chat { S(~1)Gamma''(~1)Gamma'()p(~1)c()f0(~session) } = 1.3735401               
+ Sum(Observed/Expected) { S(~1)Gamma''(~1)Gamma'()p(~1)c()f0(~session) } = 90030.896               
+ s-bar { S(~1)Gamma''(~1)Gamma'()p(~1)c()f0(~session) } = 0.3737891               
+ Fletcher chat { S(~1)Gamma''(~1)Gamma'()p(~1)c()f0(~session) } = 0.9998187               
+
+
+ PARM-SPECIFIC Link Function Parameters of { S(~1)Gamma''(~1)Gamma'()p(~1)c()f0(~session) }
+                                                              95% Confidence Interval
+    Parameter                  Beta         Standard Error     Lower           Upper
+ -------------------------  --------------  --------------  --------------  --------------
+    1:S:(Intercept)          0.4081998       0.1451116       0.1237810       0.6926186    
+    2:GammaDoublePrime:(In  -2.2990872       0.5678720      -3.4121163      -1.1860580    
+    3:p:(Intercept)          0.0934658       0.0637608      -0.0315053       0.2184370    
+    4:f0:(Intercept)         1.4412477       0.5523135       0.3587132       2.5237823    
+    5:f0:session2           -0.0805970       0.7658745      -1.5817110       1.4205171    
+    6:f0:session3           -0.1531319       0.7827102      -1.6872438       1.3809801    
+    7:f0:session4           -0.3162836       0.8250112      -1.9333056       1.3007384    
+
+
+       Real Function Parameters of { S(~1)Gamma''(~1)Gamma'()p(~1)c()f0(~session) }
+                                                               95% Confidence Interval
+     Parameter                Estimate       Standard Error     Lower           Upper
+ --------------------------  --------------  --------------  --------------  --------------
+     1:S g1 c1 a0 t1          0.6006561       0.0348077       0.5309058       0.6665492       
+     2:Gamma'' g1 c1 a0 t1    0.0911986       0.0470660       0.0319189       0.2339647       
+     3:p g1 s1 t1             0.5233495       0.0159054       0.4921243       0.5543931       
+     4:f0 g1 a0 s1 t0         4.2259655       2.3340579       1.5371272       11.618287       
+     5:f0 g1 a0 s2 t0         3.8987297       2.2461101       1.3652577       11.133498       
+     6:f0 g1 a0 s3 t0         3.6259484       2.1708526       1.2254395       10.728805       
+     7:f0 g1 a0 s4 t0         3.0801064       2.0141714       0.9564733       9.9187882       
+
+Program  MARK  - Survival Rate Estimation with Capture-Recapture Data
+ gfortran(dble/PIM2) Vers. 11.2 Nov 2025  17-Nov-2026 10:09:20    Page  005
+ - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+ 
+                     Estimates of Derived Parameters
+
+ Population Estimates of { S(~1)Gamma''(~1)Gamma'()p(~1)c()f0(~session) }
+                                                95% Confidence Interval
+ Grp. Sess.     N-hat        Standard Error      Lower           Upper
+ ---- -----  --------------  --------------  --------------  --------------
+   1     1    91.225965       2.3340579       88.537127       98.618287    
+   1     2    84.898730       2.2461101       82.365258       92.133498    
+   1     3    79.625948       2.1708526       77.225439       86.728805    
+   1     4    69.080106       2.0141714       66.956473       75.918788    
+
+ To compute parameter estimates, CPU Time was 0.001 secs and System Time was 0.001 secs.
+
+ For procedure estimate CPU Time was 0.078 secs and System Time was 0.078 secs.
+ INPUT --- proc stop;
+
+ For this job, CPU Time in mins was 0.002 and System Time in mins was 0.002.
+
+     Time Start = 10:09:20.851   Time End = 10:09:20.948
+
+ Wall Clock Time in mins for this job was 0.001.
+
+ Maximum of 26 words used.
+
+
+          E X E C U T I O N   S U C C E S S F U L
