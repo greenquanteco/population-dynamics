@@ -5,6 +5,8 @@
 ## loading in necessary packages
 library(RMark)
 library(tidyverse)
+library(rjags)
+library(R2jags)
 
 ## call in data sets (original excel sheets in SMT 2026 Grid Data)
 cap <- read.csv("capture-events.csv")
@@ -180,11 +182,14 @@ caught
 ## times the number of primary occasions times the number of secondary occasions
 obs <- array(NA, dim = c(n.ind, n.primary, max(n.secondary)))
 dim(obs)
+
+# have to convert cmat from data frame to matrix
+cmat.matrix <- as.matrix(cmat)
 for (i in 1:n.primary){
-  obs[,i,1:n.secondary[i]] <- cmat[,index[[i]], drop=FALSE]
+  obs[,i,1:n.secondary[i]] <- cmat.matrix[,index[[i]]]
  }
 dim(obs)
-# this is giving error :(
+
 
 ## format the data as required in the Bayesian implementation of the robust design
 ch <- matrix(NA, n.ind, n.primary)
@@ -195,7 +200,6 @@ for (i in 1:n.ind){
 }
 
 ## summarize detection by primary and secondary occasions
-# ** this is not working
 test <- matrix(NA, n.ind, n.primary)
 for (i in 1:nrow(test)){
   for (j in 1:ncol(test)){
@@ -227,6 +231,25 @@ for (i in 1:nrow(yes)){
 
 total <- yes + no
 total
+
+## get first occasions of capture
+get.first <- function(x)min(which (x != 2))
+first <- apply(ch,1,get.first); first[first == "Inf"] <- NA
+
+## cut individuals released in last primary occasion (?)
+ch <- subset(ch, first != n.primary)
+first <- subset(first, first != n.primary)
+
+## define initial values for latent states
+z.init <- matrix(NA, nrow(ch), ncol(ch))
+for (i in 1:nrow(ch)){
+  if(first[i] < ncol(z.init)){
+    z.init[i,(first[i] + 1):ncol(z.init)] <- 1
+  }
+}
+
+## using random immigration
+
 
 
 
