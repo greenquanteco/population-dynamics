@@ -34,7 +34,6 @@ time_intervals
 # need to create an individual-specific time interval matrix 
 # because hunt has different time interval lengths
 
-##### need help on this :(
 
 ## organizing code into proper formatting
 
@@ -110,10 +109,14 @@ ch_df.2 <- ch_df.2[!apply(is_all_zeros, 1, any), , drop = FALSE]
 
 # make sure ch lengths are all 20
 nchar(ch_df.2$ch)
+any(ch_df.2$ch=="0000000000000000")
+ch_df.2$urban.level <- factor(ch_df.2$urban.level)
+ch_df.2$urban.num <- as.numeric(ch_df.2$urban.level)
 
 ## try and run model
+# input into MARK
 rd_processed <- process.data(
-  ch_df.2,
+  ch_df.2[,c(1,5)],
   model          = "Robust",
   time.intervals = time_intervals
 )
@@ -124,7 +127,7 @@ rd_fit <- mark(
   rd_processed,
   rd_ddl,
   model.parameters = list(
-    S                = list(formula = ~ urban.level),
+    S                = list(formula = ~ urban.num),
     p                = list(formula = ~ 1),
     GammaPrime       = list(formula = ~ 1),
     GammaDoublePrime = list(formula = ~ 1)
@@ -134,3 +137,5 @@ rd_fit <- mark(
 )
 
 rd_fit$results$beta
+str(rd_fit$results)
+names(rd_fit)
