@@ -3,6 +3,8 @@
 # have to figure out to include urbanization
 
 ## loading in necessary packages
+# have to make sure using the proper version of jags
+# Sys.setenv(JAGS_HOME="C:/Program Files/JAGS/JAGS-4.3.2")
 library(RMark)
 library(tidyverse)
 library(rjags)
