@@ -1,4 +1,6 @@
 ### trying stuff with SMT2026 data ###
+# everything running without errors
+# but data at end returns NULL
 
 ## will need to make new cmat with just peles !!
 ## code for creating cmat is in script "make-capture-history.R"
