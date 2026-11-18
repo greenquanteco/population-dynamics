@@ -251,7 +251,81 @@ for (i in 1:nrow(ch)){
 }
 
 ## using random immigration
+model <- function() {
+  
+  # priors
+  phi ~ dunif(0,1)     # survival  
+  gamma ~ dunif(0,1)   # gamma
+  gam <- 1 - gamma     # MARK parameterization
+  mean.p ~ dunif(0,1)  # detection
+  
+  # secondary occasions p's
+  for (t in 1:n.years){
+    for (j in 1:max(n.sec[1:n.years])){
+      p[t,j] <- mean.p
+    }
+  }
+  
+  for (t in 1:n.years){
+    for (j in 1:n.sec[t]){
+      yes[t,j] ~ dbin(p[t,j], total[t,j])
+    }
+  }   
+  
+  # primary occasions p's or pooled detection probability
+  for (t in 1:n.years){
+    pstar[t] <- 1 - prod(1 - p[t,1:n.sec[t]])
+  }
+  
+  # likelihood
+  
+  for (i in 1:n.ind){
+    z[i,first[i]] <- ch[i,first[i]]
+    for (t in (first[i]+1):n.years){
+      mu1[i,t] <- z[i,t-1] * phi
+      mu2[i,t] <- z[i,t] * (gamma) * pstar[t]
+      z[i,t] ~ dbern(mu1[i,t])  # state equations
+      ch[i,t] ~ dbern(mu2[i,t]) # observation equations
+    } 
+  }
+}
 
+ch[ch == 2] <- 0 # Bernoulli likelihood
+dat <- list(first = first, 
+            ch = ch, 
+            n.sec = n.secondary, 
+            n.years = ncol(ch), 
+            n.ind = nrow(ch),
+            yes = yes, 
+            total = total)
 
+# initial values, parameters to monitor, MCMC settings
+# (number of iterations for burnin and post-inference probably need to be increased)
+inits <- function(){list(z = z.init)}  
+pars <- c('pstar','mean.p','phi','gam')
+n.chains <- 1
+n.iter <- 1000
+n.burnin <- 500
 
+# fitting model to data
+res_random <- jags(data = dat, 
+                   inits = inits, 
+                   parameters.to.save = pars,
+                   model.file = model, 
+                   n.chains = n.chains,
+                   n.iter = n.iter, 
+                   n.burnin = n.burnin)
 
+# posterior density distribution of the parameters
+jagsfit.mcmc <- as.mcmc(res_random)
+densityplot(jagsfit.mcmc)
+
+# display results
+summary(jagsfit.mcmc)
+
+# posterior means for population size
+Nmcmc <- matrix(NA, nrow(res_random$BUGSoutput$sims.list$pstar), n.primary)
+for (i in 1:n.primary){
+  Nmcmc[,i] <- caught[i] / res_random$BUGSoutput$sims.list$pstar[,i]
+}
+apply(Nmcmc,2,mean)
