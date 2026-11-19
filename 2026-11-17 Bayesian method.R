@@ -150,6 +150,7 @@ model.2$results$real
 # print population size estimates
 model.2$results$derived$`N Population Size`
 
+ #######################################################################################
 ### Now for the Bayesian approach!! ### 
 
 ## this data should be in form of cmat (capture matrix)
@@ -161,6 +162,8 @@ cmat$X <- NULL
 ## look at code for duplicating encounter histories. Is that necessary? **
 
 ## need to compute some starting quantities
+
+# separates out timing of primary vs secondary occasions
 n.ind <- nrow(cmat) # number of individuals
 n.secondary <- c(4, 4, 4, 4, 4) # number of secondary occasions per primary occasion
 n.primary <- length(n.secondary) # number of primary occasions
@@ -171,47 +174,69 @@ index <- list(1:4,
               17:20) # the secondary occasions
 
 ## calculate the number of individuals caught in each primary occasion, 
-## which we will need to get an estimate of population size
+## which we will need to get an estimate of population size ##
 caught <- rep(NA, n.primary) # creates vector to catch results
 for (i in 1:n.primary){ # iterate through each primary session
   tmp <- cmat[,index[[i]]] # iterate through each secondary within each primary
   caught[i] <- nrow(tmp[rowSums(tmp)!=0,]) # sum number of ind captures and put into "caught" vector
 }
-caught
-## need to check these values are correct ^^
+caught # prints vector
 
-## format the data as an array with dimensions the number of individuals
-## times the number of primary occasions times the number of secondary occasions
+# format the data as an array with dimensions the number of individuals
+# times the number of primary occasions times the number of secondary occasions
 obs <- array(NA, dim = c(n.ind, n.primary, max(n.secondary)))
 dim(obs)
 
 # have to convert cmat from data frame to matrix
 cmat.matrix <- as.matrix(cmat)
+
+# input values from cmat into obs array format
+# this is creating a 3D array which holds the capture histories for all individuals
 for (i in 1:n.primary){
   obs[,i,1:n.secondary[i]] <- cmat.matrix[,index[[i]]]
  }
 dim(obs)
-
+# dim = rows, columns, layers
+# so there are 219 rows (for each individual), 
+# 5 columns (for each primary session), and 4 layers (for each secondary session)
+# moving forward: i = ind, t = primary, j = secondary for "obs:
 
 ## format the data as required in the Bayesian implementation of the robust design
-ch <- matrix(NA, n.ind, n.primary)
-for (i in 1:n.ind){
-  for (t in 1:n.primary){
-    ifelse(any(obs[i,t,1:n.secondary[t]] == 1), ch[i,t] <- 1, ch[i,t] <- 2)
+ch <- matrix(NA, n.ind, n.primary) # creates an empty matrix with rows = num inds and columns = num primary sessions
+
+# using for loop to fill in empty matrix with 1s and 2s
+# if in the obs array, any values equaling 1 means the animal was observed at 
+# least once during that primary ("any" returns TRUE)
+# any values equaling 2 means that animal was not observed during that primary ("any" returns FALSE)
+# for Hunt primary 1, all are returning NAs
+for (i in 1:n.ind){ # iterating through every individual
+  for (t in 1:n.primary){ # iterating through each primary session (and each secondary within)
+    ifelse(any(obs[i,t,1:n.secondary[t]] == 1), ch[i,t] <- 1, ch[i,t] <- 2) # checking if the ind was observed
   }
 }
 
 ## summarize detection by primary and secondary occasions
+
+# creates another empty matrix with rows = num inds and columns = num primary sessions
 test <- matrix(NA, n.ind, n.primary)
+
+# filling in test matrix with actual number of times each individual was caught
+# within each primary session
+# issue! Counting Hunt NAs as 0s for detection. Will this cause issues even if NAS for ch (primary sessions)
 for (i in 1:nrow(test)){
   for (j in 1:ncol(test)){
-    test[i,j] <- sum(obs[i,j,], na.rm = TRUE)
+    test[i,j] <- sum(obs[i,j,], na.rm = TRUE) # sums number of detections within each primary session
   }
 }
 
+# created two empty arrays with same dimensions as obs (219x5x4) to catch data
 seen <- array(NA, c(n.ind, n.primary, max(n.secondary)))
 missed <- array(NA, c(n.ind, n.primary, max(n.secondary)))
 
+# iterating through "test" matrix. If individual was detected more than once at a given primary session
+# and was seen at the secondary within that primary, then 1 is assigned to "seen" array
+# If individual was detected one or more times at a given primary session and was NOT seen 
+# at a secondary within that primary, then 1 is assigned to "missed" array
 for (i in 1:nrow(test)){
   for (t in 1:ncol(test)){
     for (j in 1:n.secondary[t]){
@@ -221,9 +246,13 @@ for (i in 1:nrow(test)){
   }
 }
 
+# creating two empty matrices which represent 
+# rows = number of primary sessions and columns = number of secondary sessions
 yes <- matrix(NA, n.primary, max(n.secondary))
 no <- matrix(NA, n.primary, max(n.secondary))
 
+# yes sums number of 1s within "seen" array
+# no sums number of 1s within "missed" array
 for (i in 1:nrow(yes)){
   for (j in 1:ncol(yes)){
     yes[i,j] <- sum(seen[,i,j], na.rm = TRUE)
@@ -231,33 +260,60 @@ for (i in 1:nrow(yes)){
   }
 }
 
+# totaling yes and no. This is important because can assume if animal was seen within later secondary sessions
+# but was not seen in other secondary sessions, it was likely there but just not captured
+# so totaling missed and seen gives a more actual estimate of actual population size
+# at each given occasion
 total <- yes + no
 total
 
-## get first occasions of capture
+## now we have an estimate of pop size at each occasion! ##
+
+## Next step: get first occasions of capture ##
+
+# creates a function which takes input "x" then iterates through values to find those 
+# NOT equal to 2 (which in ch means not detected) then "min" finds the smallest
+# position which is TRUE (meaning the first time the animal is observed)
 get.first <- function(x)min(which (x != 2))
+
+# applies "get.first" function to ch to determine what was the first primary session
+# where the individual was seen
+# ";" separates multiple commands on a single line
 first <- apply(ch,1,get.first); first[first == "Inf"] <- NA
 
-## cut individuals released in last primary occasion (?)
+## cut individuals released in last primary occasion (?) ##
+# this cut 17 individuals when subsetting ch. Condition to keep is value is in first
+# is not equal to total number number of primary sampling occasions.
+# meaning, any animal first captured in the last session is removed
 ch <- subset(ch, first != n.primary)
+
+# does same thing but for "first"
 first <- subset(first, first != n.primary)
 
-## define initial values for latent states
-z.init <- matrix(NA, nrow(ch), ncol(ch))
-for (i in 1:nrow(ch)){
-  if(first[i] < ncol(z.init)){
-    z.init[i,(first[i] + 1):ncol(z.init)] <- 1
+## define initial values for latent states (true biological condition of animal)
+# such as dead or alive or in a specific location
+z.init <- matrix(NA, nrow(ch), ncol(ch)) # creating empty matrix with row = ind and col = primary sessions
+
+# code is modifying matrix "z.init"
+# iterates through all ind and if first observation was before final sampling period 
+# (determined by columns in z.init)
+# then replace NA with 1 for every sampling period after first observation
+for (i in 1:nrow(ch)){ # iterating through all individuals
+  if(first[i] < ncol(z.init)){ # checking whether the first observation occurred before the final sampling period
+    z.init[i,(first[i] + 1):ncol(z.init)] <- 1 #replace NA with 1 for every sampling period after first observation
   }
 }
 
-## using random immigration
+## now have initial states for all individuals!! ##
+
+### using random immigration and running Bayesian model ###
 model <- function() {
   
   # priors
-  phi ~ dunif(0,1)     # survival  
-  gamma ~ dunif(0,1)   # gamma
+  phi ~ dunif(0,1)     # survival; dunif calculates PDF of a cont uniform distribution
+  gamma ~ dunif(0,1)   # gamma; temporary emigration probability
   gam <- 1 - gamma     # MARK parameterization
-  mean.p ~ dunif(0,1)  # detection
+  mean.p ~ dunif(0,1)  # detection probability
   
   # secondary occasions p's
   for (t in 1:n.years){
